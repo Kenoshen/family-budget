@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:family_budget/envelope/editEnvelope.dart';
-import 'package:family_budget/keypad/keypad.dart';
-import 'package:family_budget/model/currency.dart';
-import 'package:family_budget/model/envelope.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+
+import '../envelope/editEnvelope.dart';
+import '../keypad/keypad.dart';
+import '../model/currency.dart';
+import '../model/envelope.dart';
 
 class Dashboard extends StatelessWidget {
   @override

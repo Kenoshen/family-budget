@@ -1,6 +1,7 @@
-import 'package:family_budget/model/envelope.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+
+import '../model/envelope.dart';
 
 Future<Envelope?> showEditEnvelope(BuildContext context,
     {required Envelope envelope, bool isNew = false}) async {
@@ -180,7 +181,8 @@ class _EditEnvelopeState extends State<EditEnvelope> {
               Navigator.pop(innerContext);
               Navigator.pop(context);
             },
-            style: TextButton.styleFrom(primary: Colors.white, backgroundColor: Colors.red),
+            style: TextButton.styleFrom(
+                primary: Colors.white, backgroundColor: Colors.red),
             child: Text("Delete"),
           ),
         ],
