@@ -6,8 +6,11 @@ import '../envelope/editEnvelope.dart';
 import '../keypad/keypad.dart';
 import '../model/currency.dart';
 import '../model/envelope.dart';
+import '../preferences/preferences.dart';
 
 class Dashboard extends StatelessWidget {
+  GlobalKey _reorderListKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     CollectionReference envelopeCollection =
@@ -22,11 +25,43 @@ class Dashboard extends StatelessWidget {
         } else if (snapshot.hasData) {
           final docs = snapshot.data?.docs;
           if (docs != null) {
-            body = ListView.builder(
-                itemCount: docs.length,
-                itemBuilder: (ctx, index) {
-                  return EnvelopeItem(Envelope.fromSnapshot(docs[index]));
-                });
+            final sortOrder = Preferences.sortOrder();
+            var dirtySortOrder = false;
+            List<String> oldEntries = [...sortOrder];
+            docs.forEach((doc) {
+              if (sortOrder.indexOf(doc.id) < 0) {
+                sortOrder.add(doc.id);
+                dirtySortOrder = true;
+              } else {
+                oldEntries.remove(doc.id);
+              }
+            });
+            if (dirtySortOrder || oldEntries.isNotEmpty) {
+              oldEntries.forEach((old) => sortOrder.remove(old));
+              Preferences.setSortOrder(sortOrder);
+            }
+            docs.sort(
+                (a, b) => sortOrder.indexOf(a.id) - sortOrder.indexOf(b.id));
+            body = ReorderableListView.builder(
+              key: _reorderListKey,
+              itemCount: docs.length,
+              itemBuilder: (ctx, index) {
+                var doc = docs[index];
+                return EnvelopeItem(
+                    ValueKey(doc.id), Envelope.fromSnapshot(doc));
+              },
+              onReorder: (int oldIndex, int newIndex) {
+                var id = sortOrder.removeAt(oldIndex);
+                if (newIndex > oldIndex) {
+                  sortOrder.insert(newIndex - 1, id);
+                } else {
+                  sortOrder.insert(newIndex, id);
+                }
+                docs.sort(
+                        (a, b) => sortOrder.indexOf(a.id) - sortOrder.indexOf(b.id));
+                Preferences.setSortOrder(sortOrder);
+              },
+            );
           }
         } else {
           body = Text("Loading Data...");
@@ -62,7 +97,7 @@ class Dashboard extends StatelessWidget {
 class EnvelopeItem extends StatefulWidget {
   final Envelope envelope;
 
-  EnvelopeItem(this.envelope);
+  EnvelopeItem(Key key, this.envelope) : super(key: key);
 
   @override
   _EnvelopeItemState createState() => _EnvelopeItemState();
@@ -100,7 +135,6 @@ class _EnvelopeItemState extends State<EnvelopeItem> {
       ),
       onTap: () => addAmount(context),
       onDoubleTap: () => editEnvelope(context),
-      onLongPress: () => editEnvelope(context),
     );
   }
 

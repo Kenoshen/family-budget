@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import 'dashboard/dashboard.dart';
+import 'preferences/preferences.dart';
 
 void main() {
   debugPaintSizeEnabled = false;
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: FutureBuilder(
-        future: _initialization,
+        future: init(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Text("${snapshot.error}");
@@ -45,5 +46,10 @@ class MyApp extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> init() async {
+    await _initialization;
+    await Preferences.init();
   }
 }
