@@ -1,3 +1,5 @@
+import 'package:family_budgeter/user/withSignedInUser.dart';
+import 'package:family_budgeter/user/withUserExt.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Family Budgeter',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -28,18 +30,11 @@ class MyApp extends StatelessWidget {
           if (snapshot.hasError) {
             return Text("${snapshot.error}");
           } else if (snapshot.connectionState == ConnectionState.done) {
-            return FutureBuilder<UserCredential>(
-              future: FirebaseAuth.instance.signInAnonymously(),
-              builder: (ctx, snapshot) {
-                if (snapshot.hasError) {
-                  return Text("${snapshot.error}");
-                } else if (snapshot.connectionState == ConnectionState.done) {
-                  return Dashboard();
-                } else {
-                  return Text("Loading User...");
-                }
-              },
-            );
+            return WithSignedInUser(builder: (_, __) {
+              return WithUserExt(builder: (_, __) {
+                return Dashboard();
+              });
+            });
           } else {
             return Text("Loading App...");
           }
