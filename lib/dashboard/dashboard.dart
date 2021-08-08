@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:family_budgeter/model/userExt.dart';
+import 'package:family_budgeter/user/withUserExt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -70,6 +72,7 @@ class Dashboard extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text("Envelopes"),
+            leading: IconButton(onPressed: () => addToFamily(context), icon: Icon(Icons.person_add)),
             actions: [
               IconButton(
                   onPressed: () => addEnvelope(context, envelopeCollection),
@@ -92,6 +95,18 @@ class Dashboard extends StatelessWidget {
       await result.ref?.set(result.toJson());
     }
   }
+
+  addToFamily(BuildContext context) async {
+    final UserExt? u = currentUserExt;
+    if (u != null) {
+      if (u.family == null) {
+        final col = FirebaseFirestore.instance.collection("family");
+
+      }
+    }
+  }
+
+
 }
 
 class EnvelopeItem extends StatefulWidget {
