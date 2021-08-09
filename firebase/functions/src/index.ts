@@ -14,7 +14,7 @@ const RefillEveryYear = "year"
 
 // run this every day at 0:00 GMT
 export const dailyRefillCheck = functions.pubsub.schedule("0 0 * * *").onRun((_) => {
-    let cycles:Map<string, boolean> = new Map<string, boolean>();
+    let cycles: Map<string, boolean> = new Map<string, boolean>();
     cycles.set(RefillEveryDay, true);
     let now = new Date();
     if (now.getDay() === 1) { // every monday
@@ -27,18 +27,25 @@ export const dailyRefillCheck = functions.pubsub.schedule("0 0 * * *").onRun((_)
         }
     }
 
-    db.collection("envelope").stream().on("data", (snap: firestore.DocumentSnapshot) => {
-        let refillEvery:string = snap.get("refillEvery")
+    let updateEnvelopeAmount = (snap: firestore.DocumentSnapshot) => {
+        let refillEvery: string = snap.get("refillEvery")
         if (cycles.get(refillEvery)) {
-            let refillAmount:number = snap.get("refillAmount")
-            let amount:number = snap.get("amount")
+            let refillAmount: number = snap.get("refillAmount")
+            let amount: number = snap.get("amount")
             let newAmount = amount + refillAmount
-            let allowOverfill:boolean = snap.get("allowOverfill")
+            let allowOverfill: boolean = snap.get("allowOverfill")
             if (newAmount > refillAmount && !allowOverfill) {
                 newAmount = refillAmount
             }
-            // is there a way to do batch updates here so we don't just blast out an update call for each row?
             snap.ref.update({"amount": newAmount})
         }
+    };
+
+    db.collection("userExt").stream().on("data", (userSnap: firestore.DocumentSnapshot) => {
+        db.collection(`userExt/${userSnap.id}/envelopes`).stream().on("data", updateEnvelopeAmount)
     })
+    db.collection("family").stream().on("data", (familySnap: firestore.DocumentSnapshot) => {
+        db.collection(`family/${familySnap.id}/envelopes`).stream().on("data", updateEnvelopeAmount)
+    })
+    // will this method return before these streams are done streaming??? hmmm, probably, but will that close the cloud func?
 });
