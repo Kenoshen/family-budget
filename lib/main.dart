@@ -1,10 +1,12 @@
 import 'package:family_budgeter/display/displayError.dart';
+import 'package:family_budgeter/envelope/envelopeSourceNotifier.dart';
 import 'package:family_budgeter/user/withSignedInUser.dart';
 import 'package:family_budgeter/user/withUserExt.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:provider/provider.dart';
 
 import 'dashboard/dashboard.dart';
 import 'display/displayLoading.dart';
@@ -34,7 +36,12 @@ class MyApp extends StatelessWidget {
           } else if (snapshot.connectionState == ConnectionState.done) {
             return WithSignedInUser(builder: (_, __) {
               return WithUserExt(builder: (_, __) {
-                return Dashboard();
+                return MultiProvider(
+                  providers: [
+                    ChangeNotifierProvider(create: (_) => EnvelopeSourceNotifier()),
+                  ],
+                  child: Dashboard(),
+                );
               });
             });
           } else {

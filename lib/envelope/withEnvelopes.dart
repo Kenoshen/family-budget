@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_budgeter/display/displayError.dart';
 import 'package:family_budgeter/display/displayLoading.dart';
+import 'package:family_budgeter/envelope/envelopeSourceNotifier.dart';
 import 'package:family_budgeter/model/envelope.dart';
 import 'package:family_budgeter/model/family.dart';
 import 'package:family_budgeter/model/userExt.dart';
 import 'package:family_budgeter/user/withUserExt.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 
 class WithEnvelopes extends StatelessWidget {
   final Widget Function(BuildContext context, List<Envelope> envelopes,
@@ -19,8 +21,8 @@ class WithEnvelopes extends StatelessWidget {
     if (u == null) {
       return Container();
     }
-    return FutureBuilder<CollectionReference<Map<String, dynamic>>>(
-      future: envelopeCollection(u),
+    return FutureBuilder<CollectionReference<Map<String, dynamic>>?>(
+      future: envelopeCollection(context),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return DisplayError(snapshot.error);
@@ -48,23 +50,12 @@ class WithEnvelopes extends StatelessWidget {
     );
   }
 
-  Future<CollectionReference<Map<String, dynamic>>> envelopeCollection(
-      UserExt u) async {
-    if (u.family != null) {
-      final familySnapshot = await u.family!.get();
-      if (familySnapshot.exists) {
-        final family = Family.fromSnapshot(familySnapshot);
-        if (family.envelopes == null) {
-          family.envelopes = FirebaseFirestore.instance
-              .collection("family/${familySnapshot.id}/envelopes");
-        }
-        return family.envelopes!;
-      }
+  Future<CollectionReference<Map<String, dynamic>>?> envelopeCollection(BuildContext context) async {
+    final source = context.watch<EnvelopeSourceNotifier>();
+    if (source.source != null) {
+      return source.source!;
+    } else {
+      return await source.calculateEnvelopeCollection();
     }
-    if (u.envelopes == null) {
-      u.envelopes = FirebaseFirestore.instance
-          .collection("userExt/${u.id}/envelopes");
-    }
-    return u.envelopes!;
   }
 }

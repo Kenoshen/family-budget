@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:family_budgeter/envelope/envelopeSourceNotifier.dart';
 import 'package:family_budgeter/envelope/withEnvelopes.dart';
 import 'package:family_budgeter/model/family.dart';
 import 'package:family_budgeter/model/userExt.dart';
 import 'package:family_budgeter/user/withUserExt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
 
 import '../envelope/editEnvelope.dart';
 import '../keypad/keypad.dart';
@@ -40,7 +42,8 @@ class Dashboard extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text("Envelopes"),
+            title: Text((currentUserExt?.family != null ? "Family " : "") +
+                "Envelopes"),
             leading: IconButton(
                 onPressed: () => addToFamily(context),
                 icon: Icon(Icons.person_add)),
@@ -55,36 +58,40 @@ class Dashboard extends StatelessWidget {
           ),
           body: docs.isNotEmpty
               ? ReorderableListView.builder(
-            key: _reorderListKey,
-            itemCount: docs.length,
-            itemBuilder: (ctx, index) {
-              var doc = docs[index];
-              return EnvelopeItem(ValueKey(doc.id), doc);
-            },
-            onReorder: (int oldIndex, int newIndex) {
-              var id = sortOrder.removeAt(oldIndex);
-              if (newIndex > oldIndex) {
-                sortOrder.insert(newIndex - 1, id);
-              } else {
-                sortOrder.insert(newIndex, id);
-              }
-              docs.sort((a, b) =>
-              sortOrder.indexOf(a.id) - sortOrder.indexOf(b.id));
-              Preferences.setSortOrder(sortOrder);
-            },
-          )
+                  key: _reorderListKey,
+                  itemCount: docs.length,
+                  itemBuilder: (ctx, index) {
+                    var doc = docs[index];
+                    return EnvelopeItem(ValueKey(doc.id), doc);
+                  },
+                  onReorder: (int oldIndex, int newIndex) {
+                    var id = sortOrder.removeAt(oldIndex);
+                    if (newIndex > oldIndex) {
+                      sortOrder.insert(newIndex - 1, id);
+                    } else {
+                      sortOrder.insert(newIndex, id);
+                    }
+                    docs.sort((a, b) =>
+                        sortOrder.indexOf(a.id) - sortOrder.indexOf(b.id));
+                    Preferences.setSortOrder(sortOrder);
+                  },
+                )
               : Padding(
-            padding: EdgeInsets.all(40),
-            child: Text("Add a new envelope by pressing the + button",
-                textAlign: TextAlign.center, style: TextStyle(fontSize: 30, color: Theme.of(context).disabledColor),),
-          ),
+                  padding: EdgeInsets.all(40),
+                  child: Text(
+                    "Add a new envelope by pressing the + button",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 30, color: Theme.of(context).disabledColor),
+                  ),
+                ),
         );
       },
     );
   }
 
-  addEnvelope(BuildContext context,
-      CollectionReference envelopeCollection) async {
+  addEnvelope(
+      BuildContext context, CollectionReference envelopeCollection) async {
     final envelope = Envelope();
     final ref = await envelopeCollection.add(envelope.toJson());
     envelope.ref = ref;
@@ -95,7 +102,6 @@ class Dashboard extends StatelessWidget {
   }
 
   addToFamily(BuildContext context) async {
-    print("Add to family");
     final UserExt? u = currentUserExt;
     if (u != null) {
       Family family;
@@ -109,27 +115,29 @@ class Dashboard extends StatelessWidget {
       } else {
         family = Family.fromSnapshot(await u.family!.get());
       }
-
+      family.envelopes = FirebaseFirestore.instance
+          .collection("family/${family.id}/envelopes");
+      Provider.of<EnvelopeSourceNotifier>(context, listen: false).source = family.envelopes;
       if (u.envelopes != null) {
-        print("add to family envelopes");
-        family.envelopes = FirebaseFirestore.instance.collection("family/${family.id}/envelopes");
         final ref = await u.envelopes!.get();
-        print("Get user envelopes ref ${ref.size}");
-        final envelopes = ref.docs.map((d) => Envelope.fromSnapshot(d)).toList();
-        print("Got envelopes: ${envelopes.length}");
-        await Future.wait(envelopes.map((e) => family.envelopes!.add(e.toJson())));
-        // TODO: need to figure out how to switch over the envelopes collection that the WithEnvelopes.steam is looking at
+        final envelopes =
+            ref.docs.map((d) => Envelope.fromSnapshot(d)).toList();
+        await Future.wait(
+            envelopes.map((e) => family.envelopes!.add(e.toJson())));
       }
     }
   }
 
   leaveFamily(BuildContext context) async {
-    print("Leave family");
     final UserExt? u = currentUserExt;
     if (u != null) {
       if (u.family != null) {
         u.family = null;
         await u.ref!.set({"family": null});
+        if (u.envelopes == null) {
+          u.envelopes = FirebaseFirestore.instance.collection("userExt/${u.id}/envelopes");
+        }
+        Provider.of<EnvelopeSourceNotifier>(context, listen: false).source = u.envelopes;
       }
     }
   }
@@ -191,7 +199,7 @@ class _EnvelopeItemState extends State<EnvelopeItem> {
 
   editEnvelope(BuildContext context) async {
     final result =
-    await showEditEnvelope(context, envelope: widget.envelope.copy());
+        await showEditEnvelope(context, envelope: widget.envelope.copy());
     if (result != null) {
       await result.ref?.set(result.toJson());
     }
