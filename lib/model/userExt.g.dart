@@ -8,7 +8,7 @@ part of 'userExt.dart';
 
 UserExt _$UserExtFromJson(Map<String, dynamic> json) {
   return UserExt(
-    name: json['name'] as String,
+    name: json['name'] as String?,
     family: firestoreDocRefFromJson(json['family']),
     envelopes: firestoreColRefFromJson(json['envelopes']),
   );

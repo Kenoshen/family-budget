@@ -15,7 +15,7 @@ class UserExt {
     return ref?.id ?? "";
   }
 
-  String name;
+  String? name;
   @JsonKey(fromJson: firestoreDocRefFromJson, toJson: firestoreDocRefToJson)
   DocumentReference<Map<String, dynamic>>? family;
   @JsonKey(fromJson: firestoreColRefFromJson, toJson: firestoreColRefToJson)

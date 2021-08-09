@@ -1,3 +1,4 @@
+import 'package:family_budgeter/display/displayError.dart';
 import 'package:family_budgeter/user/withSignedInUser.dart';
 import 'package:family_budgeter/user/withUserExt.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import 'dashboard/dashboard.dart';
+import 'display/displayLoading.dart';
 import 'preferences/preferences.dart';
 
 void main() {
@@ -28,7 +30,7 @@ class MyApp extends StatelessWidget {
         future: init(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Text("${snapshot.error}");
+            return DisplayError(snapshot.error);
           } else if (snapshot.connectionState == ConnectionState.done) {
             return WithSignedInUser(builder: (_, __) {
               return WithUserExt(builder: (_, __) {
@@ -36,7 +38,7 @@ class MyApp extends StatelessWidget {
               });
             });
           } else {
-            return Text("Loading App...");
+            return DisplayLoading("Loading App...");
           }
         },
       ),

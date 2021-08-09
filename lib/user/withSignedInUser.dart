@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:family_budgeter/display/displayError.dart';
+import 'package:family_budgeter/display/displayLoading.dart';
 import 'package:family_budgeter/model/userExt.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -14,16 +16,16 @@ class WithSignedInUser extends StatelessWidget {
       future: FirebaseAuth.instance.signInAnonymously(),
         builder: (context, snapshot) {
       if (snapshot.hasError) {
-        return Text("${snapshot.error}");
+        return DisplayError(snapshot.error);
       }
       if (snapshot.hasData) {
         final data = snapshot.data;
         if (data == null || data.user == null) {
-          return Text("user data was null");
+          return DisplayError("user data was null");
         }
         return builder(context, data.user!);
       }
-      return Text("Loading user...");
+      return DisplayLoading("Loading user...");
     });
   }
 }

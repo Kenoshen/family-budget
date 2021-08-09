@@ -46,8 +46,11 @@ class Dashboard extends StatelessWidget {
                 icon: Icon(Icons.person_add)),
             actions: [
               IconButton(
+                  onPressed: () => leaveFamily(context),
+                  icon: Icon(Icons.person_remove)),
+              IconButton(
                   onPressed: () => addEnvelope(context, envelopeCollection),
-                  icon: Icon(Icons.add))
+                  icon: Icon(Icons.add)),
             ],
           ),
           body: docs.isNotEmpty
@@ -92,6 +95,7 @@ class Dashboard extends StatelessWidget {
   }
 
   addToFamily(BuildContext context) async {
+    print("Add to family");
     final UserExt? u = currentUserExt;
     if (u != null) {
       Family family;
@@ -100,11 +104,33 @@ class Dashboard extends StatelessWidget {
         final col = FirebaseFirestore.instance.collection("family");
         final ref = await col.add(family.toJson());
         family.ref = ref;
+        u.family = FirebaseFirestore.instance.doc("family/${family.id}");
+        await u.ref!.set({"family": u.family});
       } else {
         family = Family.fromSnapshot(await u.family!.get());
       }
 
+      if (u.envelopes != null) {
+        print("add to family envelopes");
+        family.envelopes = FirebaseFirestore.instance.collection("family/${family.id}/envelopes");
+        final ref = await u.envelopes!.get();
+        print("Get user envelopes ref ${ref.size}");
+        final envelopes = ref.docs.map((d) => Envelope.fromSnapshot(d)).toList();
+        print("Got envelopes: ${envelopes.length}");
+        await Future.wait(envelopes.map((e) => family.envelopes!.add(e.toJson())));
+        // TODO: need to figure out how to switch over the envelopes collection that the WithEnvelopes.steam is looking at
+      }
+    }
+  }
 
+  leaveFamily(BuildContext context) async {
+    print("Leave family");
+    final UserExt? u = currentUserExt;
+    if (u != null) {
+      if (u.family != null) {
+        u.family = null;
+        await u.ref!.set({"family": null});
+      }
     }
   }
 }

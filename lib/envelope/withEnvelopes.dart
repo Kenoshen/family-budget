@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:family_budgeter/display/displayError.dart';
+import 'package:family_budgeter/display/displayLoading.dart';
 import 'package:family_budgeter/model/envelope.dart';
 import 'package:family_budgeter/model/family.dart';
 import 'package:family_budgeter/model/userExt.dart';
@@ -21,7 +23,7 @@ class WithEnvelopes extends StatelessWidget {
       future: envelopeCollection(u),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Text("${snapshot.error}");
+          return DisplayError(snapshot.error);
         }
         if (snapshot.hasData && snapshot.data != null) {
           final envelopeCollectionRef = snapshot.data;
@@ -29,7 +31,7 @@ class WithEnvelopes extends StatelessWidget {
             stream: envelopeCollectionRef!.snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return Text("${snapshot.error}");
+                return DisplayError(snapshot.error);
               }
               if (snapshot.hasData && snapshot.data != null) {
                 final envelopes = snapshot.data!.docs
@@ -37,11 +39,11 @@ class WithEnvelopes extends StatelessWidget {
                     .toList();
                 return builder(context, envelopes, envelopeCollectionRef);
               }
-              return Text("Loading envelope data...");
+              return DisplayLoading("Loading envelope data...");
             },
           );
         }
-        return Text("Loading envelopes...");
+        return DisplayLoading("Loading envelopes...");
       },
     );
   }
