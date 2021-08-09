@@ -1,15 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_budgeter/display/displayError.dart';
 import 'package:family_budgeter/envelope/envelopeSourceNotifier.dart';
 import 'package:family_budgeter/user/withSignedInUser.dart';
 import 'package:family_budgeter/user/withUserExt.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 
 import 'dashboard/dashboard.dart';
 import 'display/displayLoading.dart';
+import 'model/userExt.dart';
 import 'preferences/preferences.dart';
 
 void main() {
@@ -35,12 +38,18 @@ class MyApp extends StatelessWidget {
             return DisplayError(snapshot.error);
           } else if (snapshot.connectionState == ConnectionState.done) {
             return WithSignedInUser(builder: (_, __) {
-              return WithUserExt(builder: (_, __) {
+              return WithUserExt(builder: (context, __) {
                 return MultiProvider(
                   providers: [
-                    ChangeNotifierProvider(create: (_) => EnvelopeSourceNotifier()),
+                    ChangeNotifierProvider(
+                        create: (_) => EnvelopeSourceNotifier()),
                   ],
-                  child: Dashboard(),
+                  child: FutureBuilder(
+                    future: initDynamicLinks(context), // must be after login and providers
+                    builder: (context, _) {
+                      return Dashboard();
+                    },
+                  ),
                 );
               });
             });
@@ -55,5 +64,43 @@ class MyApp extends StatelessWidget {
   Future<void> init() async {
     await _initialization;
     await Preferences.init();
+  }
+
+  Future<void> initDynamicLinks(BuildContext context) async {
+    final setFamily = (UserExt u, Uri deepLink) async {
+      final familyId = deepLink.queryParameters["family"];
+      print("Set family: $familyId}");
+      u.family = FirebaseFirestore.instance.doc("family/$familyId");
+      await u.ref!.set({"family": u.family});
+      final source =
+          Provider.of<EnvelopeSourceNotifier>(context, listen: false);
+      source.source = await source
+          .calculateEnvelopeCollection(); // notify listeners of change
+    };
+    FirebaseDynamicLinks.instance.onLink(
+        onSuccess: (PendingDynamicLinkData? dynamicLink) async {
+      final Uri? deepLink = dynamicLink?.link;
+      print("Got dynamic link with open app: $dynamicLink $deepLink");
+      final UserExt? u = currentUserExt;
+      if (deepLink != null &&
+          deepLink.queryParameters.containsKey("family") &&
+          u != null) {
+        setFamily(u, deepLink);
+      }
+    }, onError: (OnLinkErrorException e) async {
+      print('onLinkError');
+      print(e.message);
+    });
+
+    final PendingDynamicLinkData? data =
+        await FirebaseDynamicLinks.instance.getInitialLink();
+    final Uri? deepLink = data?.link;
+    final UserExt? u = currentUserExt;
+    if (deepLink != null) {
+      print("Got initial deep link: $deepLink");
+      if (deepLink.queryParameters.containsKey("family") && u != null) {
+        setFamily(u, deepLink);
+      }
+    }
   }
 }

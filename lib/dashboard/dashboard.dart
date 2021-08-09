@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_budgeter/envelope/envelopeSourceNotifier.dart';
+import 'package:family_budgeter/envelope/share.dart';
 import 'package:family_budgeter/envelope/withEnvelopes.dart';
 import 'package:family_budgeter/model/family.dart';
 import 'package:family_budgeter/model/userExt.dart';
@@ -7,6 +8,7 @@ import 'package:family_budgeter/user/withUserExt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../envelope/editEnvelope.dart';
 import '../keypad/keypad.dart';
@@ -47,14 +49,16 @@ class Dashboard extends StatelessWidget {
             leading: IconButton(
                 onPressed: () => addToFamily(context),
                 icon: Icon(Icons.person_add)),
-            actions: [
-              IconButton(
-                  onPressed: () => leaveFamily(context),
-                  icon: Icon(Icons.person_remove)),
+            actions: <Widget?>[
+              currentUserExt?.family != null
+                  ? IconButton(
+                      onPressed: () => leaveFamily(context),
+                      icon: Icon(Icons.person_remove))
+                  : null,
               IconButton(
                   onPressed: () => addEnvelope(context, envelopeCollection),
                   icon: Icon(Icons.add)),
-            ],
+            ].where((e) => e != null).map((e) => e!).toList(),
           ),
           body: docs.isNotEmpty
               ? ReorderableListView.builder(
@@ -117,7 +121,8 @@ class Dashboard extends StatelessWidget {
       }
       family.envelopes = FirebaseFirestore.instance
           .collection("family/${family.id}/envelopes");
-      Provider.of<EnvelopeSourceNotifier>(context, listen: false).source = family.envelopes;
+      Provider.of<EnvelopeSourceNotifier>(context, listen: false).source =
+          family.envelopes;
       if (u.envelopes != null) {
         final ref = await u.envelopes!.get();
         final envelopes =
@@ -125,6 +130,9 @@ class Dashboard extends StatelessWidget {
         await Future.wait(
             envelopes.map((e) => family.envelopes!.add(e.toJson())));
       }
+
+      final String shareLink = await inviteToFamily(family);
+      Share.share(shareLink);
     }
   }
 
@@ -135,9 +143,11 @@ class Dashboard extends StatelessWidget {
         u.family = null;
         await u.ref!.set({"family": null});
         if (u.envelopes == null) {
-          u.envelopes = FirebaseFirestore.instance.collection("userExt/${u.id}/envelopes");
+          u.envelopes = FirebaseFirestore.instance
+              .collection("userExt/${u.id}/envelopes");
         }
-        Provider.of<EnvelopeSourceNotifier>(context, listen: false).source = u.envelopes;
+        Provider.of<EnvelopeSourceNotifier>(context, listen: false).source =
+            u.envelopes;
       }
     }
   }
@@ -156,14 +166,14 @@ class _EnvelopeItemState extends State<EnvelopeItem> {
   @override
   Widget build(BuildContext context) {
     final textStyle = TextStyle(fontSize: 20);
-    return InkWell(
-      child: Padding(
-        padding: EdgeInsets.all(20),
-        child: Container(
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.all(Radius.circular(10))),
-          height: 80,
+    return Padding(
+      padding: EdgeInsets.all(20),
+      child: Container(
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.all(Radius.circular(10))),
+        height: 80,
+        child: InkWell(
           child: Padding(
             padding: EdgeInsets.only(left: 10, right: 10),
             child: Row(
@@ -180,10 +190,10 @@ class _EnvelopeItemState extends State<EnvelopeItem> {
               ],
             ),
           ),
+          onTap: () => addAmount(context),
+          onDoubleTap: () => editEnvelope(context),
         ),
       ),
-      onTap: () => addAmount(context),
-      onDoubleTap: () => editEnvelope(context),
     );
   }
 
