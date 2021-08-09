@@ -26,8 +26,8 @@ class Envelope {
   factory Envelope.fromJson(Map<String, dynamic> json) => _$EnvelopeFromJson(json);
   Map<String, dynamic> toJson() => _$EnvelopeToJson(this);
 
-  factory Envelope.fromSnapshot(QueryDocumentSnapshot doc) {
-    final e = Envelope.fromJson(doc.data() as Map<String, dynamic>);
+  factory Envelope.fromSnapshot(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
+    final e = Envelope.fromJson(doc.data());
     e.ref = doc.reference;
     return e;
   }

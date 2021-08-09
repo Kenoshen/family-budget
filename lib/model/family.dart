@@ -17,7 +17,7 @@ class Family {
   }
 
   @JsonKey(fromJson: firestoreColRefFromJson, toJson: firestoreColRefToJson)
-  CollectionReference? envelopes;
+  CollectionReference<Map<String, dynamic>>? envelopes;
 
   Family({this.envelopes});
 

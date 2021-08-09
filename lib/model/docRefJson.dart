@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:family_budgeter/model/envelope.dart';
 
 /// Deserialize Firebase DocumentReference data type from Firestore
-DocumentReference? firestoreDocRefFromJson(dynamic value) {
+DocumentReference<Map<String, dynamic>>? firestoreDocRefFromJson(dynamic value) {
   if (value == null) {
     return null;
   } else if (value is DocumentReference) {
@@ -17,7 +16,7 @@ DocumentReference? firestoreDocRefFromJson(dynamic value) {
 dynamic firestoreDocRefToJson(dynamic value) => value;
 
 /// Deserialize Firebase DocumentReference data type from Firestore
-CollectionReference? firestoreColRefFromJson(dynamic value) {
+CollectionReference<Map<String, dynamic>>? firestoreColRefFromJson(dynamic value) {
   if (value == null) {
     return null;
   } else if (value is CollectionReference) {

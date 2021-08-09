@@ -17,9 +17,11 @@ class UserExt {
 
   String name;
   @JsonKey(fromJson: firestoreDocRefFromJson, toJson: firestoreDocRefToJson)
-  DocumentReference? family;
+  DocumentReference<Map<String, dynamic>>? family;
+  @JsonKey(fromJson: firestoreColRefFromJson, toJson: firestoreColRefToJson)
+  CollectionReference<Map<String, dynamic>>? envelopes;
 
-  UserExt({this.name = "", this.family});
+  UserExt({this.name = "", this.family, this.envelopes});
 
   factory UserExt.fromJson(Map<String, dynamic> json) => _$UserExtFromJson(json);
   Map<String, dynamic> toJson() => _$UserExtToJson(this);
