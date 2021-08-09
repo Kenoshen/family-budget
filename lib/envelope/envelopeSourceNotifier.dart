@@ -22,18 +22,11 @@ class EnvelopeSourceNotifier with ChangeNotifier {
         final familySnapshot = await u.family!.get();
         if (familySnapshot.exists) {
           final family = Family.fromSnapshot(familySnapshot);
-          if (family.envelopes == null) {
-            family.envelopes = FirebaseFirestore.instance
-                .collection("family/${familySnapshot.id}/envelopes");
-          }
-          _source = family.envelopes!;
+          _source = family.envelopes;
         }
+      } else {
+        _source = u.envelopes;
       }
-      if (u.envelopes == null) {
-        u.envelopes =
-            FirebaseFirestore.instance.collection("userExt/${u.id}/envelopes");
-      }
-      _source = u.envelopes!;
     }
     return source;
   }

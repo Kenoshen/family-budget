@@ -8,7 +8,7 @@ part "userExt.g.dart";
 @JsonSerializable()
 class UserExt {
   @JsonKey(ignore: true)
-  DocumentReference ?ref;
+  DocumentReference? ref;
 
   @JsonKey(ignore: true)
   String get id {
@@ -18,10 +18,18 @@ class UserExt {
   String? name;
   @JsonKey(fromJson: firestoreDocRefFromJson, toJson: firestoreDocRefToJson)
   DocumentReference<Map<String, dynamic>>? family;
-  @JsonKey(fromJson: firestoreColRefFromJson, toJson: firestoreColRefToJson)
-  CollectionReference<Map<String, dynamic>>? envelopes;
 
-  UserExt({this.name = "", this.family, this.envelopes});
+  @JsonKey(ignore: true)
+  CollectionReference<Map<String, dynamic>>? _envelopes;
+  @JsonKey(ignore: true)
+  CollectionReference<Map<String, dynamic>> get envelopes {
+    if (_envelopes == null) {
+      _envelopes = FirebaseFirestore.instance.collection("userExt/$id/envelopes");
+    }
+    return _envelopes!;
+  }
+
+  UserExt({this.name = "", this.family});
 
   factory UserExt.fromJson(Map<String, dynamic> json) => _$UserExtFromJson(json);
   Map<String, dynamic> toJson() => _$UserExtToJson(this);

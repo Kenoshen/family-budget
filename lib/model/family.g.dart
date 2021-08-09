@@ -8,10 +8,10 @@ part of 'family.dart';
 
 Family _$FamilyFromJson(Map<String, dynamic> json) {
   return Family(
-    envelopes: firestoreColRefFromJson(json['envelopes']),
+    name: json['name'] as String,
   );
 }
 
 Map<String, dynamic> _$FamilyToJson(Family instance) => <String, dynamic>{
-      'envelopes': firestoreColRefToJson(instance.envelopes),
+      'name': instance.name,
     };

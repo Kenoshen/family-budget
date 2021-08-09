@@ -16,10 +16,19 @@ class Family {
     return ref?.id ?? "";
   }
 
-  @JsonKey(fromJson: firestoreColRefFromJson, toJson: firestoreColRefToJson)
-  CollectionReference<Map<String, dynamic>>? envelopes;
+  final String name;
 
-  Family({this.envelopes});
+  @JsonKey(ignore: true)
+  CollectionReference<Map<String, dynamic>>? _envelopes;
+  @JsonKey(ignore: true)
+  CollectionReference<Map<String, dynamic>> get envelopes {
+    if (_envelopes == null) {
+      _envelopes = FirebaseFirestore.instance.collection("family/$id/envelopes");
+    }
+    return _envelopes!;
+  }
+
+  Family({this.name = ""});
 
   factory Family.fromJson(Map<String, dynamic> json) => _$FamilyFromJson(json);
   Map<String, dynamic> toJson() => _$FamilyToJson(this);

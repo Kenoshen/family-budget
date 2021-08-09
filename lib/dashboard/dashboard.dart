@@ -119,20 +119,21 @@ class Dashboard extends StatelessWidget {
       } else {
         family = Family.fromSnapshot(await u.family!.get());
       }
-      family.envelopes = FirebaseFirestore.instance
-          .collection("family/${family.id}/envelopes");
-      Provider.of<EnvelopeSourceNotifier>(context, listen: false).source =
-          family.envelopes;
-      if (u.envelopes != null) {
-        final ref = await u.envelopes!.get();
-        final envelopes =
-            ref.docs.map((d) => Envelope.fromSnapshot(d)).toList();
+
+      // grab all of the envelopes from the user and copy them to the family envelopes
+      final ref = await u.envelopes.get();
+      final envelopes = ref.docs.map((d) => Envelope.fromSnapshot(d)).toList();
+      if (envelopes.isNotEmpty) {
         await Future.wait(
-            envelopes.map((e) => family.envelopes!.add(e.toJson())));
+            envelopes.map((e) => family.envelopes.add(e.toJson())));
       }
 
+      // set the envelope source on the provider
+      Provider.of<EnvelopeSourceNotifier>(context, listen: false).source =
+          family.envelopes;
+
       final String shareLink = await inviteToFamily(family);
-      Share.share(shareLink);
+      Share.share("Share my Family Budgeter envelopes: $shareLink");
     }
   }
 
@@ -142,10 +143,6 @@ class Dashboard extends StatelessWidget {
       if (u.family != null) {
         u.family = null;
         await u.ref!.set({"family": null});
-        if (u.envelopes == null) {
-          u.envelopes = FirebaseFirestore.instance
-              .collection("userExt/${u.id}/envelopes");
-        }
         Provider.of<EnvelopeSourceNotifier>(context, listen: false).source =
             u.envelopes;
       }
