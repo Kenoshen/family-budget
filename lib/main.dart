@@ -45,7 +45,8 @@ class MyApp extends StatelessWidget {
                         create: (_) => EnvelopeSourceNotifier()),
                   ],
                   child: FutureBuilder(
-                    future: initDynamicLinks(context), // must be after login and providers
+                    future: initDynamicLinks(context),
+                    // must be after login and providers
                     builder: (context, _) {
                       return Dashboard();
                     },
@@ -68,6 +69,14 @@ class MyApp extends StatelessWidget {
 
   Future<void> initDynamicLinks(BuildContext context) async {
     final setFamily = (UserExt u, Uri deepLink) async {
+      showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              title: Text("Set family"),
+              content: Text("${u.id} $deepLink"),
+            );
+          });
       final familyId = deepLink.queryParameters["family"];
       print("Set family: $familyId}");
       u.family = FirebaseFirestore.instance.doc("family/$familyId");
@@ -77,9 +86,13 @@ class MyApp extends StatelessWidget {
       source.source = await source
           .calculateEnvelopeCollection(); // notify listeners of change
     };
+
     FirebaseDynamicLinks.instance.onLink(
         onSuccess: (PendingDynamicLinkData? dynamicLink) async {
       final Uri? deepLink = dynamicLink?.link;
+      showDialog(context: context, builder: (ctx){
+        return AlertDialog(title: Text("Got dynamic link"), content: Text("$deepLink"),);
+      });
       print("Got dynamic link with open app: $dynamicLink $deepLink");
       final UserExt? u = currentUserExt;
       if (deepLink != null &&
@@ -90,6 +103,9 @@ class MyApp extends StatelessWidget {
     }, onError: (OnLinkErrorException e) async {
       print('onLinkError');
       print(e.message);
+      showDialog(context: context, builder: (ctx){
+        return AlertDialog(title: Text("Got dynamic link error"), content: Text("$e"),);
+      });
     });
 
     final PendingDynamicLinkData? data =
@@ -97,6 +113,9 @@ class MyApp extends StatelessWidget {
     final Uri? deepLink = data?.link;
     final UserExt? u = currentUserExt;
     if (deepLink != null) {
+      showDialog(context: context, builder: (ctx){
+        return AlertDialog(title: Text("Got initial deep link"), content: Text("$deepLink"),);
+      });
       print("Got initial deep link: $deepLink");
       if (deepLink.queryParameters.containsKey("family") && u != null) {
         setFamily(u, deepLink);

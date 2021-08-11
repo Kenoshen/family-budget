@@ -109,7 +109,9 @@ class Dashboard extends StatelessWidget {
     final UserExt? u = currentUserExt;
     if (u != null) {
       Family family;
+      var newFamily = false;
       if (u.family == null) {
+        newFamily = true;
         family = Family();
         final col = FirebaseFirestore.instance.collection("family");
         final ref = await col.add(family.toJson());
@@ -120,12 +122,15 @@ class Dashboard extends StatelessWidget {
         family = Family.fromSnapshot(await u.family!.get());
       }
 
-      // grab all of the envelopes from the user and copy them to the family envelopes
-      final ref = await u.envelopes.get();
-      final envelopes = ref.docs.map((d) => Envelope.fromSnapshot(d)).toList();
-      if (envelopes.isNotEmpty) {
-        await Future.wait(
-            envelopes.map((e) => family.envelopes.add(e.toJson())));
+      if (newFamily) {
+        // grab all of the envelopes from the user and copy them to the family envelopes
+        final ref = await u.envelopes.get();
+        final envelopes = ref.docs.map((d) => Envelope.fromSnapshot(d))
+            .toList();
+        if (envelopes.isNotEmpty) {
+          await Future.wait(
+              envelopes.map((e) => family.envelopes.add(e.toJson())));
+        }
       }
 
       // set the envelope source on the provider
