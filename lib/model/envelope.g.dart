@@ -13,6 +13,9 @@ Envelope _$EnvelopeFromJson(Map<String, dynamic> json) {
     refillAmount: json['refillAmount'] as int,
     refillEvery: _$enumDecode(_$RefillEveryEnumMap, json['refillEvery']),
     allowOverfill: json['allowOverfill'] as bool,
+    activity: (json['activity'] as List<dynamic>?)
+        ?.map((e) => Activity.fromJson(e as Map<String, dynamic>))
+        .toList(),
   );
 }
 
@@ -22,6 +25,7 @@ Map<String, dynamic> _$EnvelopeToJson(Envelope instance) => <String, dynamic>{
       'refillAmount': instance.refillAmount,
       'refillEvery': _$RefillEveryEnumMap[instance.refillEvery],
       'allowOverfill': instance.allowOverfill,
+      'activity': instance.activity,
     };
 
 K _$enumDecode<K, V>(

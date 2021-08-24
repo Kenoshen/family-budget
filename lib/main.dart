@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_budgeter/display/displayError.dart';
 import 'package:family_budgeter/envelope/envelopeSourceNotifier.dart';
+import 'package:family_budgeter/model/config.dart';
 import 'package:family_budgeter/user/withSignedInUser.dart';
 import 'package:family_budgeter/user/withUserExt.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
@@ -65,6 +67,8 @@ class MyApp extends StatelessWidget {
   Future<void> init() async {
     await _initialization;
     await Preferences.init();
+    Config.setDefaults(Config(maxActivityLength: 10));
+    await Config.init();
   }
 
   Future<void> initDynamicLinks(BuildContext context) async {

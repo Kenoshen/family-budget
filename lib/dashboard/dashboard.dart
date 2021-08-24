@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_budgeter/envelope/envelopeSourceNotifier.dart';
 import 'package:family_budgeter/envelope/share.dart';
 import 'package:family_budgeter/envelope/withEnvelopes.dart';
+import 'package:family_budgeter/model/activity.dart';
+import 'package:family_budgeter/model/config.dart';
 import 'package:family_budgeter/model/family.dart';
 import 'package:family_budgeter/model/userExt.dart';
 import 'package:family_budgeter/user/withUserExt.dart';
@@ -204,8 +206,13 @@ class _EnvelopeItemState extends State<EnvelopeItem> {
         title: widget.envelope.name,
         subtitle: "Total: ${amountToDollars(widget.envelope.amount)}");
     if (result != null) {
-      widget.envelope.amount += (result * 100).toInt();
-      await widget.envelope.ref?.set(widget.envelope.toJson());
+      final amt = (result * 100).toInt();
+      if (amt != 0) {
+        widget.envelope.amount += amt;
+        widget.envelope.addActivity(Activity(desc: amt > 0 ? "add" : "subtract", amt: amt));
+        widget.envelope.trimActivity(Config.getMaxActivityLength());
+        await widget.envelope.ref?.set(widget.envelope.toJson());
+      }
     }
   }
 
@@ -213,6 +220,9 @@ class _EnvelopeItemState extends State<EnvelopeItem> {
     final result =
         await showEditEnvelope(context, envelope: widget.envelope.copy());
     if (result != null) {
+      if (widget.envelope.amount != result.amount) {
+        result.addActivity(Activity(desc: "set amount", amt: result.amount));
+      }
       await result.ref?.set(result.toJson());
     }
   }

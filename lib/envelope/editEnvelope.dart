@@ -1,3 +1,5 @@
+import 'package:family_budgeter/model/activity.dart';
+import 'package:family_budgeter/model/currency.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -150,6 +152,10 @@ class _EditEnvelopeState extends State<EditEnvelope> {
                   },
                   child: const Text('Save'),
                 ),
+                widget.envelope.activity != null ? Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: widget.envelope.activity!.map((a) => ActivityWidget(a)).toList(),
+                ) : Container(),
               ],
             ),
           ),
@@ -186,6 +192,25 @@ class _EditEnvelopeState extends State<EditEnvelope> {
             child: Text("Delete"),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class ActivityWidget extends StatelessWidget {
+  final Activity activity;
+
+  ActivityWidget(this.activity);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(activity.desc),
+      subtitle: Text(activity.on!.toIso8601String()),
+      trailing: Text(
+        amountToDollars(activity.amt),
+        style: TextStyle(
+            color: activity.amt > 0 ? Colors.green : Colors.redAccent),
       ),
     );
   }

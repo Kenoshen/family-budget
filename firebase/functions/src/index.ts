@@ -12,8 +12,8 @@ const RefillEveryWeek = "week"
 const RefillEveryMonth = "month"
 const RefillEveryYear = "year"
 
-// run this every day at 0:00 GMT
-export const dailyRefillCheck = functions.pubsub.schedule("0 0 * * *").onRun((_) => {
+// run this every day at 01:00am
+export const dailyRefillCheck = functions.pubsub.schedule("0 1 * * *").onRun(async (_) => {
     let cycles: Map<string, boolean> = new Map<string, boolean>();
     cycles.set(RefillEveryDay, true);
     let now = new Date();
@@ -37,7 +37,14 @@ export const dailyRefillCheck = functions.pubsub.schedule("0 0 * * *").onRun((_)
             if (newAmount > refillAmount && !allowOverfill) {
                 newAmount = refillAmount
             }
-            snap.ref.update({"amount": newAmount})
+
+            let a = {desc: "refilled", amt: refillAmount, on: new Date()};
+            let activity = snap.get("activity")
+            if (!activity) {
+                activity = []
+            }
+            activity.push(a);
+            snap.ref.update({"amount": newAmount, activity})
         }
     };
 
