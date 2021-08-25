@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:family_budgeter/debug/debug.dart';
 import 'package:family_budgeter/envelope/envelopeSourceNotifier.dart';
 import 'package:family_budgeter/envelope/share.dart';
 import 'package:family_budgeter/envelope/withEnvelopes.dart';
@@ -46,21 +47,39 @@ class Dashboard extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text((currentUserExt?.family != null ? "Family " : "") +
-                "Envelopes"),
-            leading: IconButton(
-                onPressed: () => addToFamily(context),
-                icon: Icon(Icons.person_add)),
-            actions: <Widget?>[
-              currentUserExt?.family != null
-                  ? IconButton(
-                      onPressed: () => leaveFamily(context),
-                      icon: Icon(Icons.person_remove))
-                  : null,
+            //title: Text((currentUserExt?.family != null ? "Family " : "") + "Envelopes"),
+              title: Text("${currentUserExt?.id}"),
+            actions: [
               IconButton(
                   onPressed: () => addEnvelope(context, envelopeCollection),
                   icon: Icon(Icons.add)),
-            ].where((e) => e != null).map((e) => e!).toList(),
+            ],
+          ),
+          drawer: Drawer(
+            child: ListView(
+              physics: ClampingScrollPhysics(),
+              padding: EdgeInsets.zero,
+              children: <Widget?>[
+                DrawerHeader(child: Text("Family Budgeter")),
+                ListTile(
+                  title: Text("Share Envelopes"),
+                  leading: Icon(Icons.person_add),
+                  onTap: () => addToFamily(context),
+                ),
+                currentUserExt?.family != null
+                    ? ListTile(
+                        title: Text("Stop Sharing"),
+                        leading: Icon(Icons.person_remove),
+                        onTap: () => leaveFamily(context),
+                      )
+                    : null,
+                ListTile(
+                  title: Text("Debug"),
+                  leading: Icon(Icons.bug_report_outlined),
+                  onTap: () => showDebug(context),
+                ),
+              ].where((e) => e != null).map((e) => e!).toList(),
+            ),
           ),
           body: docs.isNotEmpty
               ? ReorderableListView.builder(
@@ -127,8 +146,8 @@ class Dashboard extends StatelessWidget {
       if (newFamily) {
         // grab all of the envelopes from the user and copy them to the family envelopes
         final ref = await u.envelopes.get();
-        final envelopes = ref.docs.map((d) => Envelope.fromSnapshot(d))
-            .toList();
+        final envelopes =
+            ref.docs.map((d) => Envelope.fromSnapshot(d)).toList();
         if (envelopes.isNotEmpty) {
           await Future.wait(
               envelopes.map((e) => family.envelopes.add(e.toJson())));
@@ -209,7 +228,8 @@ class _EnvelopeItemState extends State<EnvelopeItem> {
       final amt = (result * 100).toInt();
       if (amt != 0) {
         widget.envelope.amount += amt;
-        widget.envelope.addActivity(Activity(desc: amt > 0 ? "add" : "subtract", amt: amt));
+        widget.envelope.addActivity(
+            Activity(desc: amt > 0 ? "add" : "subtract", amt: amt));
         widget.envelope.trimActivity(Config.getMaxActivityLength());
         await widget.envelope.ref?.set(widget.envelope.toJson());
       }
