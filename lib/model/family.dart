@@ -1,8 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:family_budgeter/model/envelope.dart';
 import 'package:json_annotation/json_annotation.dart';
-
-import 'docRefJson.dart';
 
 part "family.g.dart";
 

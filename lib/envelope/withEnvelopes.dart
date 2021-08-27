@@ -3,7 +3,6 @@ import 'package:family_budgeter/display/displayError.dart';
 import 'package:family_budgeter/display/displayLoading.dart';
 import 'package:family_budgeter/envelope/envelopeSourceNotifier.dart';
 import 'package:family_budgeter/model/envelope.dart';
-import 'package:family_budgeter/model/family.dart';
 import 'package:family_budgeter/model/userExt.dart';
 import 'package:family_budgeter/user/withUserExt.dart';
 import 'package:flutter/cupertino.dart';

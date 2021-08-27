@@ -26,7 +26,13 @@ class Envelope {
   Envelope({this.name = "", this.amount = 0, this.refillAmount = 0, this.refillEvery = RefillEvery.week, this.allowOverfill = false, this.activity});
 
   factory Envelope.fromJson(Map<String, dynamic> json) => _$EnvelopeFromJson(json);
-  Map<String, dynamic> toJson() => _$EnvelopeToJson(this);
+  Map<String, dynamic> toJson() {
+    var json = _$EnvelopeToJson(this);
+    if (activity != null) {
+      json["activity"] = activity!.map((e) => e.toJson()).toList();
+    }
+    return json;
+  }
 
   factory Envelope.fromSnapshot(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
     final e = Envelope.fromJson(doc.data());

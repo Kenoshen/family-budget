@@ -1,23 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:family_budgeter/envelope/envelopeSourceNotifier.dart';
-import 'package:family_budgeter/envelope/share.dart';
-import 'package:family_budgeter/envelope/withEnvelopes.dart';
-import 'package:family_budgeter/model/activity.dart';
-import 'package:family_budgeter/model/config.dart';
-import 'package:family_budgeter/model/family.dart';
 import 'package:family_budgeter/model/userExt.dart';
 import 'package:family_budgeter/user/withUserExt.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:prompt_dialog/prompt_dialog.dart';
-import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
-
-import '../envelope/editEnvelope.dart';
-import '../keypad/keypad.dart';
-import '../model/currency.dart';
-import '../model/envelope.dart';
-import '../preferences/preferences.dart';
 
 Future<void> showDebug(BuildContext context) async {
   await Navigator.push(
@@ -39,6 +25,11 @@ class Debug extends StatelessWidget {
             title: Text("Set Family"),
             leading: Icon(Icons.people),
             onTap: () => setFamily(context),
+          ),
+          ListTile(
+            title: Text("Set Name"),
+            leading: Icon(Icons.account_box),
+            onTap: () => setName(context),
           )
         ],
       ),
@@ -58,6 +49,19 @@ class Debug extends StatelessWidget {
       if (newFamilyId != null) {
         u.family = FirebaseFirestore.instance.doc("family/$newFamilyId");
         await u.ref!.update({"family": u.family});
+      }
+    }
+  }
+
+  setName(BuildContext context) async {
+    if (currentUserExt != null) {
+      UserExt u = currentUserExt!;
+      var name = u.name;
+      String? newName = await prompt(context,
+          title: Text("Set Name"), initialValue: name);
+      if (newName != null) {
+        u.name = newName;
+        await u.ref!.update({"name": u.name});
       }
     }
   }

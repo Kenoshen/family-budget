@@ -2,6 +2,7 @@ import 'package:family_budgeter/model/activity.dart';
 import 'package:family_budgeter/model/currency.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
 
 import '../model/envelope.dart';
 
@@ -29,6 +30,8 @@ class _EditEnvelopeState extends State<EditEnvelope> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Activity> activity = widget.envelope.activity != null && widget.envelope.activity!.isNotEmpty ? [...widget.envelope.activity!] : [];
+    activity.sort((a, b) => b.on!.compareTo(a.on!));
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -127,7 +130,7 @@ class _EditEnvelopeState extends State<EditEnvelope> {
                 ),
                 ...RefillEvery.values.map((v) {
                   return ListTile(
-                    title: Text("${v.toString().split(".").last}"),
+                    title: Text("${v.toString().split(".").last}${widget.envelope.refillEvery == v ? " (${next(widget.envelope.refillEvery)})" : ""}"),
                     leading: Radio<RefillEvery>(
                       value: v,
                       groupValue: widget.envelope.refillEvery,
@@ -152,10 +155,7 @@ class _EditEnvelopeState extends State<EditEnvelope> {
                   },
                   child: const Text('Save'),
                 ),
-                widget.envelope.activity != null ? Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: widget.envelope.activity!.map((a) => ActivityWidget(a)).toList(),
-                ) : Container(),
+                activity.isNotEmpty ? ListView.separated(itemBuilder: (BuildContext context, int index) => ActivityWidget(activity[index]), separatorBuilder: (_, __) => const Divider(), itemCount: activity.length, shrinkWrap: true, physics: ClampingScrollPhysics(),) : Container(),
               ],
             ),
           ),
@@ -195,18 +195,36 @@ class _EditEnvelopeState extends State<EditEnvelope> {
       ),
     );
   }
+
+  String next(RefillEvery every) {
+    switch (every) {
+      case RefillEvery.day:
+        return "tomorrow";
+      case RefillEvery.week:
+        return "next Monday";
+      case RefillEvery.month:
+        return "1st of next month";
+      case RefillEvery.year:
+        return "Jan 1st of next year";
+      default:
+        return "";
+    }
+  }
 }
 
 class ActivityWidget extends StatelessWidget {
+  final DateFormat formatter = DateFormat('yyyy-MM-dd H:mm a');
   final Activity activity;
 
   ActivityWidget(this.activity);
 
   @override
   Widget build(BuildContext context) {
+    final date = activity.on!.toLocal();
     return ListTile(
+      dense: true,
       title: Text(activity.desc),
-      subtitle: Text(activity.on!.toIso8601String()),
+      subtitle: Text(formatter.format(date)),
       trailing: Text(
         amountToDollars(activity.amt),
         style: TextStyle(
