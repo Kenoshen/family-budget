@@ -27,7 +27,7 @@ export const dailyRefillCheck = functions.pubsub.schedule("0 1 * * *").onRun(asy
         }
     }
 
-    let updateEnvelopeAmount = (snap: firestore.DocumentSnapshot) => {
+    let updateEnvelopeAmount = (snap: firestore.DocumentSnapshot): Promise<any> => {
         let refillEvery: string = snap.get("refillEvery")
         if (cycles.get(refillEvery)) {
             let refillAmount: number = snap.get("refillAmount")
@@ -44,15 +44,14 @@ export const dailyRefillCheck = functions.pubsub.schedule("0 1 * * *").onRun(asy
                 activity = []
             }
             activity.push(a);
-            snap.ref.update({"amount": newAmount, activity})
+            return snap.ref.update({"amount": newAmount, activity})
         }
+        return Promise.resolve();
     };
 
-    db.collection("userExt").stream().on("data", (userSnap: firestore.DocumentSnapshot) => {
-        db.collection(`userExt/${userSnap.id}/envelopes`).stream().on("data", updateEnvelopeAmount)
-    })
-    db.collection("family").stream().on("data", (familySnap: firestore.DocumentSnapshot) => {
-        db.collection(`family/${familySnap.id}/envelopes`).stream().on("data", updateEnvelopeAmount)
-    })
-    // will this method return before these streams are done streaming??? hmmm, probably, but will that close the cloud func?
+    let [userExt, family] = await Promise.all([db.collection("userExt").get(), db.collection("family").get()])
+    let docs = []
+    docs.push(...userExt.docs)
+    docs.push(...family.docs)
+    return Promise.all([...docs.map((d) => updateEnvelopeAmount(d))])
 });
