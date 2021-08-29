@@ -61,8 +61,11 @@ class _EnvelopeItemState extends State<EnvelopeItem> {
       if (amt != 0) {
         var name = currentUserExt?.name ?? "";
         widget.envelope.amount += amt;
-        widget.envelope.addActivity(
-            Activity(desc: [name, amt > 0 ? "add" : "subtract"].where((s) => s.isNotEmpty).join(" "), amt: amt));
+        widget.envelope.addActivity(Activity(
+            desc: [name, amt > 0 ? "add" : "subtract"]
+                .where((s) => s.isNotEmpty)
+                .join(" "),
+            amt: amt));
         widget.envelope.trimActivity(Config.getMaxActivityLength());
         await widget.envelope.ref?.set(widget.envelope.toJson());
       }
@@ -71,10 +74,13 @@ class _EnvelopeItemState extends State<EnvelopeItem> {
 
   editEnvelope(BuildContext context) async {
     final result =
-    await showEditEnvelope(context, envelope: widget.envelope.copy());
+        await showEditEnvelope(context, envelope: widget.envelope.copy());
     if (result != null) {
       if (widget.envelope.amount != result.amount) {
-        result.addActivity(Activity(desc: "set amount", amt: result.amount));
+        var name = currentUserExt?.name ?? "";
+        result.addActivity(Activity(
+            desc: [name, "set"].where((s) => s.isNotEmpty).join(" "),
+            amt: result.amount));
       }
       await result.ref?.set(result.toJson());
     }

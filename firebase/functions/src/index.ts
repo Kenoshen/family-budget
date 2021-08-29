@@ -38,7 +38,7 @@ export const dailyRefillCheck = functions.pubsub.schedule("0 1 * * *").onRun(asy
                 newAmount = refillAmount
             }
 
-            let a = {desc: "refilled", amt: refillAmount, on: new Date()};
+            let a = {desc: "refilled", amt: refillAmount, on: new Date().toISOString()};
             let activity = snap.get("activity")
             if (!activity) {
                 activity = []
