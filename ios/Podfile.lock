@@ -348,6 +348,10 @@ PODS:
     - Firebase/Firestore (= 8.5.0)
     - firebase_core
     - Flutter
+  - cloud_functions (3.0.1):
+    - Firebase/Functions (= 8.5.0)
+    - firebase_core
+    - Flutter
   - Firebase/Analytics (8.5.0):
     - Firebase/Core
   - Firebase/Auth (8.5.0):
@@ -364,6 +368,9 @@ PODS:
   - Firebase/Firestore (8.5.0):
     - Firebase/CoreOnly
     - FirebaseFirestore (~> 8.5.0)
+  - Firebase/Functions (8.5.0):
+    - Firebase/CoreOnly
+    - FirebaseFunctions (~> 8.5.0)
   - Firebase/RemoteConfig (8.5.0):
     - Firebase/CoreOnly
     - FirebaseRemoteConfig (~> 8.5.0)
@@ -435,6 +442,9 @@ PODS:
     - "gRPC-C++ (~> 1.28.0)"
     - leveldb-library (~> 1.22)
     - nanopb (~> 2.30908.0)
+  - FirebaseFunctions (8.5.0):
+    - FirebaseCore (~> 8.0)
+    - GTMSessionFetcher/Core (~> 1.5)
   - FirebaseInstallations (8.6.0):
     - FirebaseCore (~> 8.0)
     - GoogleUtilities/Environment (~> 7.4)
@@ -524,6 +534,7 @@ PODS:
 
 DEPENDENCIES:
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
+  - cloud_functions (from `.symlinks/plugins/cloud_functions/ios`)
   - firebase_analytics (from `.symlinks/plugins/firebase_analytics/ios`)
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
@@ -546,6 +557,7 @@ SPEC REPOS:
     - FirebaseCoreDiagnostics
     - FirebaseDynamicLinks
     - FirebaseFirestore
+    - FirebaseFunctions
     - FirebaseInstallations
     - FirebaseRemoteConfig
     - GoogleAppMeasurement
@@ -561,6 +573,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   cloud_firestore:
     :path: ".symlinks/plugins/cloud_firestore/ios"
+  cloud_functions:
+    :path: ".symlinks/plugins/cloud_functions/ios"
   firebase_analytics:
     :path: ".symlinks/plugins/firebase_analytics/ios"
   firebase_auth:
@@ -584,6 +598,7 @@ SPEC CHECKSUMS:
   abseil: 6c8eb7892aefa08d929b39f9bb108e5367e3228f
   BoringSSL-GRPC: 8edf627ee524575e2f8d19d56f068b448eea3879
   cloud_firestore: e0516b69697b348db9a4d65f3b610dfd5ba3ac1e
+  cloud_functions: a1bf1d4336ceafa98935ebbddff583e54ccd7261
   Firebase: ff8c73105b90e33e1dc6c8e5445d7adc2ccdc7c1
   firebase_analytics: 3b7d92b8d1a3482f557c201e5e46c2f7fa2644ff
   firebase_auth: 214ff86facd807bbb0ccff32f4b2d3865e3bc4f3
@@ -597,6 +612,7 @@ SPEC CHECKSUMS:
   FirebaseCoreDiagnostics: 3721920bde3a9a6d5aa093c1d25e9d3e47f694af
   FirebaseDynamicLinks: 6e406b3bb669f8c8a63e7254bb63251fa3f88a43
   FirebaseFirestore: 9aa10de35bb76a5fe40fdf5c858669f0eac88a99
+  FirebaseFunctions: eb1fedf8eb25c144ef72ff68d78259d79eb29ae5
   FirebaseInstallations: 0ede6ffcd215b8f93c19d9b06c1c54e2d4107e98
   FirebaseRemoteConfig: 693c1f150408e9a727daf4d8c55c7f9c29ef9ad5
   Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c

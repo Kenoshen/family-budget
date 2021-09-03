@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:family_budgeter/model/userExt.dart';
 import 'package:family_budgeter/user/withUserExt.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:prompt_dialog/prompt_dialog.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 Future<void> showDebug(BuildContext context) async {
   await Navigator.push(
@@ -30,7 +32,12 @@ class Debug extends StatelessWidget {
             title: Text("Set Name"),
             leading: Icon(Icons.account_box),
             onTap: () => setName(context),
-          )
+          ),
+          ListTile(
+            title: Text("Run Refill Function"),
+            leading: Icon(Icons.monetization_on),
+            onTap: () => runRefillCheck(context),
+          ),
         ],
       ),
     );
@@ -57,12 +64,22 @@ class Debug extends StatelessWidget {
     if (currentUserExt != null) {
       UserExt u = currentUserExt!;
       var name = u.name;
-      String? newName = await prompt(context,
-          title: Text("Set Name"), initialValue: name);
+      String? newName =
+          await prompt(context, title: Text("Set Name"), initialValue: name);
       if (newName != null) {
         u.name = newName;
         await u.ref!.update({"name": u.name});
       }
+    }
+  }
+
+  runRefillCheck(BuildContext context) async {
+    if (false) {
+      print("Attempt to run refill check");
+      var callable = FirebaseFunctions.instance.httpsCallable(
+          "dummyDailyRefillCheck");
+      final results = await callable();
+      print(results.data);
     }
   }
 }
