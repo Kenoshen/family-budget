@@ -16,15 +16,15 @@ const RefillEveryYear = "year"
 export const dailyRefillCheck = functions.pubsub.schedule("0 1 * * *").onRun(async (_) => {
     let now = new Date();
     console.log(`Do daily refill check at ${now.toISOString()} day: ${now.getDay()} date: ${now.getDate()} month: ${now.getMonth()}`)
-    let cycles: Map<string, boolean> = new Map<string, boolean>();
-    cycles.set(RefillEveryDay, true);
+    let cycles: {[key:string]: boolean} = {};
+    cycles[RefillEveryDay] = true;
     if (now.getDay() === 1) { // every monday
-        cycles.set(RefillEveryWeek, true)
+        cycles[RefillEveryWeek] = true
     }
     if (now.getDate() == 1) { // every 1st of the month
-        cycles.set(RefillEveryMonth, true)
+        cycles[RefillEveryMonth] = true
         if (now.getMonth() == 0) { // every Jan 1st of the year
-            cycles.set(RefillEveryYear, true)
+            cycles[RefillEveryYear] = true
         }
     }
     console.log(`Cycles: ${JSON.stringify(cycles)}`)
@@ -34,7 +34,7 @@ export const dailyRefillCheck = functions.pubsub.schedule("0 1 * * *").onRun(asy
         let data = snap.data()
         if (data) {
             let refillEvery: string = data.refillEvery
-            if (cycles.get(refillEvery)) {
+            if (cycles[refillEvery]) {
                 let refillAmount: number = data.refillAmount
                 let amount: number = data.amount
                 let newAmount = amount + refillAmount
